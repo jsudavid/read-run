@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>早读 · 声控探险</title>
+<meta name="theme-color" content="#0d1424" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='16' cy='48' r='11' fill='none' stroke='%23138a8a' stroke-width='5'/%3E%3Ccircle cx='48' cy='48' r='11' fill='none' stroke='%23138a8a' stroke-width='5'/%3E%3Cellipse cx='26' cy='26' rx='13' ry='9' fill='%23f6f3ec'/%3E%3Ccircle cx='38' cy='12' r='6' fill='%23f6f3ec'/%3E%3Cpath d='M42 11 L62 17 L42 17 Z' fill='%23f5b857'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="/src/styles/base.css" />
+<link rel="stylesheet" href="/src/styles/classroom.css" />
+</head>
+<body data-mode="bike">
+<canvas id="stage" aria-label="早读动画场景"></canvas>
+<div id="vignette"></div>
+<div id="flash" role="status" aria-live="polite"></div>
+<div class="pause-status" id="pauseStatus" role="status" aria-live="polite" hidden>已暂停</div>
+
+<section id="intro">
+  <div class="intro-card">
+    <svg class="intro-art" viewBox="0 0 300 190" aria-hidden="true">
+      <line class="road" x1="0" y1="178" x2="300" y2="178" stroke="rgba(255,255,255,0.5)" stroke-width="3" />
+      <g class="wheel"><circle cx="84" cy="140" r="36" fill="none" stroke="#3fd0c9" stroke-width="5"/><path d="M84 104 V176 M48 140 H120 M59 115 L109 165 M59 165 L109 115" stroke="#cfe" stroke-width="1.3"/></g>
+      <g class="wheel"><circle cx="210" cy="140" r="36" fill="none" stroke="#3fd0c9" stroke-width="5"/><path d="M210 104 V176 M174 140 H246 M185 115 L235 165 M185 165 L235 115" stroke="#cfe" stroke-width="1.3"/></g>
+      <path d="M84 140 L140 142 L186 98 L118 98 Z M140 142 L112 84 M210 140 L192 80 L178 78" fill="none" stroke="#138a8a" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+      <g class="bob">
+        <ellipse cx="120" cy="70" rx="46" ry="30" fill="#f6f3ec" transform="rotate(-18 120 70)"/>
+        <path d="M150 58 C 170 40, 150 22, 166 10" stroke="#f6f3ec" stroke-width="16" fill="none" stroke-linecap="round"/>
+        <circle cx="168" cy="12" r="13" fill="#f6f3ec"/>
+        <path d="M172 6 C 150 -8, 150 -8, 140 0" fill="#ff5a4e"/>
+        <path d="M176 10 L262 30 L178 22 Z" fill="#f7c25c"/>
+        <path d="M178 22 Q 220 52 256 32 L 262 30 Z" fill="#f5b857" opacity="0.9"/>
+        <circle cx="170" cy="11" r="2.6" fill="#1a0c08"/>
+        <path d="M100 76 L150 100" stroke="#19181b" stroke-width="7" stroke-linecap="round"/>
+        <path d="M118 92 L138 142" stroke="#f38a2a" stroke-width="5" stroke-linecap="round"/>
+        <path d="M150 50 C 120 40, 96 58, 70 50" stroke="#d7263d" stroke-width="7" fill="none" stroke-linecap="round"/>
+      </g>
+    </svg>
+    <h1>早读 · 鹈鹕骑单车</h1>
+    <p class="sub">全班一起大声朗读，鹈鹕就蹬车前进；<br />读得越响、越持久，骑得越快。一安静下来，它就慢慢停下。</p>
+    <div class="chips">
+      <span class="chip">声音驱动</span><span class="chip">越响越快</span><span class="chip">越久越快</span><span class="chip">没声音就停</span><span class="chip">昼夜循环</span><span class="chip">今日主角照片</span>
+    </div>
+    <div class="cta">
+      <button class="btn-primary" id="startBtn">开始早读 ▶</button>
+      <button class="btn-ghost" data-open="mPhoto">选择今日主角</button>
+      <button class="btn-ghost" data-open="mSettings">灵敏度校准</button>
+    </div>
+    <p class="err" id="startErr" role="alert" hidden></p>
+    <p class="privacy">🔒 麦克风声音只在这台电脑上实时计算音量，不录音、不上传。</p>
+    <div class="keys-hint"><kbd>F</kbd> 全屏　<kbd>R</kbd> 重置　<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> 切换场景　<kbd>P</kbd> 今日主角　<kbd>S</kbd> 灵敏度　<kbd>H</kbd> 帮助</div>
+    <p class="credit">联系作者：<a href="mailto:jsudavid@qq.com">jsudavid@qq.com</a></p>
+  </div>
+</section>
+
+<div class="hud">
+  <div class="brand panel"><span class="logo">🐦</span><div><b id="brandTitle">鹈鹕骑单车</b><small id="brandSub">读得越响越久，骑得越快</small></div></div>
+  <div class="cams panel" role="tablist" aria-label="场景">
+    <button data-mode="0" role="tab">🐦 鹈鹕骑行</button>
+    <button data-mode="1" role="tab">🐺 动物追赶</button>
+    <button data-mode="2" role="tab">🎈 云端探险</button>
+  </div>
+  <div class="tools panel">
+    <button class="icon-btn" id="pauseBtn" title="暂停 (空格)" aria-label="暂停" aria-pressed="false" disabled>⏸</button>
+    <button class="icon-btn" id="viewBtn" title="视角与场景 (C)" aria-label="视角与场景" aria-controls="sceneControls" aria-expanded="false">📷</button>
+    <button class="icon-btn" data-open="mPhoto" title="今日主角 (P)" aria-label="今日主角">🖼️</button>
+    <button class="icon-btn" data-open="mSettings" title="灵敏度 (S)" aria-label="灵敏度">🎚️</button>
+    <button class="icon-btn" data-act="reset" title="重置 (R)" aria-label="重置">🔄</button>
+    <button class="icon-btn" data-act="full" title="全屏 (F)" aria-label="全屏">⛶</button>
+    <button class="icon-btn" data-open="mHelp" title="帮助 (H)" aria-label="帮助">？</button>
+  </div>
+  <div class="dash panel">
+    <div class="gauge">
+      <svg viewBox="0 0 124 124" aria-hidden="true">
+        <defs><linearGradient id="gGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fd0c9"/><stop offset="0.6" stop-color="#ffc27a"/><stop offset="1" stop-color="#ff5a6e"/></linearGradient></defs>
+        <circle class="bg" cx="62" cy="62" r="52"/>
+        <circle class="fg" id="speedArc" cx="62" cy="62" r="52" style="stroke-dashoffset: 245"/>
+      </svg>
+      <i class="goal-tick only-chase" title="达标线"></i>
+      <div class="val"><div><b id="gVal">0</b><small id="gUnit">KM/H</small></div></div>
+    </div>
+    <div class="stats">
+      <span>声音</span><div class="level"><i id="lvl"></i></div>
+      <span class="only-bike">连续朗读</span><b class="only-bike"><span id="streakVal">0</span> <small>秒</small></b>
+      <span class="only-bike">里程</span><b class="only-bike"><span id="distVal">0.00</span> <small>km</small></b>
+      <span class="only-chase">狼群距离</span><b class="only-chase"><span id="gapVal">14</span> <small>m</small></b>
+      <span class="only-chase">连续达标</span><b class="only-chase"><span id="streak2Val">0</span> <small>秒</small></b>
+      <span class="only-balloon">连续达标</span><b class="only-balloon"><span id="balloonStreak">0</span> <small>秒</small></b>
+      <span class="only-balloon">航程</span><b class="only-balloon"><span id="balloonMeters">0</span> <small>m</small></b>
+    </div>
+  </div>
+  <div class="nudge panel" id="nudge" role="status" aria-live="polite"></div>
+  <div class="score panel">
+    <div class="row only-bike"><div class="fish"><span class="ico">🐟</span><span id="fishCount">0</span></div><div class="ach">顺路<br /><b>抓到的鱼</b></div></div>
+    <div class="only-chase">
+      <div class="ach" style="text-align:left">已逃离</div>
+      <div class="big"><span id="escVal">0</span><small>m</small></div>
+      <div class="ach" style="text-align:left">下一目标 <b id="nextVal">200</b> m</div>
+      <div class="caught-stat" role="status" aria-live="polite" aria-atomic="true"><span>本轮被追上</span><div><strong id="caughtCount">0</strong><small>次</small></div></div>
+    </div>
+    <div class="only-balloon balloon-score">
+      <div class="row"><span class="ach">收集星星</span><strong class="star-total"><span aria-hidden="true">★</span> <span id="starCount">0</span></strong></div>
+      <div class="row route-count"><span class="ach">点亮航段</span><b><span id="segmentCount">0</span> <small>段</small></b></div>
+      <div class="balloon-mobile-streak"><span>连续达标</span><b><span id="balloonStreakMobile">0.0</span> 秒</b></div>
+      <div class="route-meter"><i id="routeProgress"></i></div>
+      <small id="balloonStatus">云端停靠</small>
+    </div>
+  </div>
+</div>
+<aside class="scene-controls panel" id="sceneControls" aria-label="视角与场景" hidden>
+  <header><h2>视角与场景</h2><button class="icon-btn" id="viewClose" title="关闭" aria-label="关闭视角设置">×</button></header>
+  <label class="scene-field">机位<select id="viewShot" aria-label="相机机位"></select></label>
+  <div class="view-actions">
+    <button class="icon-btn" id="viewNear" title="拉近" aria-label="拉近视角">＋</button>
+    <button class="icon-btn" id="viewFar" title="拉远" aria-label="拉远视角">−</button>
+    <button class="icon-btn" id="viewReset" title="恢复自动镜头" aria-label="恢复自动镜头">↺</button>
+  </div>
+  <label class="scene-toggle"><input id="viewOrbit" type="checkbox" />自动环绕</label>
+  <label class="scene-toggle"><input id="cinematic" type="checkbox" />电影画幅</label>
+  <label class="scene-range" for="viewDistance"><span>距离</span><output id="viewDistanceValue"></output><input id="viewDistance" type="range" step="0.1" /></label>
+  <label class="scene-range" for="viewFov"><span>视场角</span><output id="viewFovValue"></output><input id="viewFov" type="range" min="35" max="90" step="1" /></label>
+  <fieldset><legend>环境</legend>
+    <label class="scene-toggle only-bike"><input data-scene-setting="timeFlow" type="checkbox" />昼夜流动</label>
+    <label class="scene-range only-bike"><span>时间</span><output></output><input data-scene-setting="hour" type="range" min="0" max="23.99" step="0.05" /></label>
+    <label class="scene-range only-bike"><span>昼夜速度</span><output></output><input data-scene-setting="dayRate" type="range" min="0.005" max="0.15" step="0.005" /></label>
+    <label class="scene-range only-bike"><span>云量</span><output></output><input data-scene-setting="cloud" type="range" min="0" max="1" step="0.05" /></label>
+    <label class="scene-range only-bike"><span>海浪</span><output></output><input data-scene-setting="waveAmp" type="range" min="0" max="2" step="0.05" /></label>
+    <label class="scene-toggle only-chase"><input data-scene-setting="autoMood" type="checkbox" />随朗读破晓</label>
+    <label class="scene-range only-chase"><span>天色</span><output></output><input data-scene-setting="mood" type="range" min="0" max="1" step="0.05" /></label>
+    <label class="scene-range only-balloon"><span>云量</span><output></output><input data-scene-setting="cloud" type="range" min="0" max="1" step="0.05" /></label>
+    <label class="scene-range"><span>雾</span><output></output><input data-scene-setting="fog" type="range" min="0" max="2" step="0.05" /></label>
+    <label class="scene-range"><span>曝光</span><output></output><input data-scene-setting="exposure" type="range" min="0.4" max="2" step="0.05" /></label>
+    <label class="scene-range"><span>泛光</span><output></output><input data-scene-setting="bloomBoost" type="range" min="0" max="2" step="0.05" /></label>
+  </fieldset>
+  <fieldset class="only-bike"><legend>鹈鹕</legend>
+    <label class="scene-toggle"><input data-scene-setting="helmet" type="checkbox" />头盔</label>
+    <label class="scene-toggle"><input data-scene-setting="scarf" type="checkbox" />围巾</label>
+    <label class="scene-field">墨镜<select data-scene-setting="glasses" aria-label="墨镜"><option value="auto">自动</option><option value="on">戴上</option><option value="off">摘下</option></select></label>
+  </fieldset>
+  <label class="scene-field">画质<select id="sceneQuality" aria-label="画质"><option value="auto">自动</option><option value="low">低</option><option value="mid">中</option><option value="high">高</option></select></label>
+</aside>
+<div id="toasts" aria-live="polite"></div>
+
+<div class="modal" id="mSettings" role="dialog" aria-modal="true" aria-labelledby="tSettings"><div class="panel">
+  <h3 id="tSettings">🎚️ 灵敏度校准</h3>
+  <p>请全班用平时的音量齐读一句，拖动滑块，让声音条在读的时候刚好越过中间的白线。设置会记在这台电脑上。</p>
+  <div class="meter" aria-label="当前音量"><i id="calMeter"></i><em></em></div>
+  <div class="calibration-readout" role="status" aria-live="polite">当前音量 <b id="calValue">0%</b><small id="calSource">开始后显示麦克风音量</small></div>
+  <label class="field">灵敏度<input type="range" id="sens" min="0" max="100" step="1" /><b id="sensVal">50</b></label>
+  <label class="field">麦克风<select id="micSel"><option value="">默认麦克风</option></select></label>
+  <div class="row-btns"><button class="btn-ghost" data-close>完成</button></div>
+</div></div>
+
+<div class="modal" id="mPhoto" role="dialog" aria-modal="true" aria-labelledby="tPhoto"><div class="panel">
+  <h3 id="tPhoto">🖼️ 今日主角</h3>
+  <div class="photo-body">
+    <img id="photoPreview" alt="已处理的今日主角头像" hidden />
+    <div>
+      <p>在这台电脑上选择一张本地图片，浏览器会立即处理成匿名化主角纹理。</p>
+      <input id="photoInput" class="photo-input" type="file" accept="image/jpeg,image/png,image/webp" tabindex="-1" aria-label="选择今日主角图片" />
+      <button class="btn-primary photo-choose" id="photoChoose" type="button">选择本地图片</button>
+      <p class="status" id="photoStatus" role="status">未选择照片，使用默认主角。</p>
+    </div>
+  </div>
+  <p>原图只在当前浏览器内存中读取，不上传服务器、不写入磁盘；关闭或刷新页面后需要重新选择。</p>
+  <div class="row-btns"><button class="btn-ghost" id="photoRemove" type="button">删除今日照片</button><button class="btn-ghost" data-close>关闭</button></div>
+</div></div>
+
+<div class="modal" id="mHelp" role="dialog" aria-modal="true" aria-labelledby="tHelp"><div class="panel">
+  <h3 id="tHelp">怎么用</h3>
+  <ul>
+    <li>点「开始早读」并允许使用麦克风，全班开始齐读。</li>
+    <li>鹈鹕骑行：没有声音就不走；读得越响、越持久，骑得越快。</li>
+    <li>动物追赶：保持达标音量，狼群就退后、天慢慢亮起来；安静下来狼群会逼近。</li>
+    <li>云端探险：持续达标朗读让热气球上升，收集星星、点亮航段；短暂换气可继续飘行，安静后会缓缓降落，奖励保留。</li>
+    <li>第一次使用先点 🎚️ 校准：全班正常齐读时，声音条刚好越过白线。</li>
+    <li>快捷键：<kbd>F</kbd> 全屏 · <kbd>R</kbd> 重置 · <kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd> 切换场景 · <kbd>P</kbd> 今日主角 · <kbd>S</kbd> 灵敏度</li>
+  </ul>
+  <p style="margin-top:14px">🔒 麦克风声音和本地照片只在这台电脑上处理，不录音、不上传。</p>
+  <p>如需反馈或合作，请联系作者：<a href="mailto:jsudavid@qq.com" style="color:inherit">jsudavid@qq.com</a>。</p>
+  <div class="row-btns"><button class="btn-ghost" data-close>知道了</button></div>
+</div></div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "read-run",
+  "version": "2.0.0",
+  "private": true,
+  "description": "早读朗读激励器 · 3D 版（Three.js 场景 + 浏览器本地图片）",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "dev": "NODE_ENV=development node server/server.js",
+    "build": "vite build",
+    "start": "NODE_ENV=production node server/server.js",
+    "preview": "vite build && NODE_ENV=production node server/server.js"
+  },
+  "dependencies": {
+    "express": "4.22.3",
+    "qrcode": "1.5.4"
+  },
+  "devDependencies": {
+    "three": "0.186.1",
+    "vite": "8.3.1"
+  }
+}

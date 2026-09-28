@@ -1,0 +1,11 @@
+# 本机测试用：docker compose up --build，然后浏览器打开 http://localhost:8080
+# localhost 是安全上下文，麦克风可正常授权，无需 Caddy/HTTPS。
+services:
+  app:
+    build: .
+    image: read-run:local
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    restart: unless-stopped

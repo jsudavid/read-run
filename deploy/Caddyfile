@@ -1,0 +1,9 @@
+# 生产部署（ADR-0001）：把 read.example.com 换成你的真实域名，指向本服务器。
+# Caddy 自动申请/续期 Let's Encrypt 证书，教室通过 https 访问 -> 麦克风可用。
+# 用法：caddy run --config ./deploy/Caddyfile
+#   或将本段并入服务器已有的 Caddyfile。
+
+read.example.com {
+	encode zstd gzip
+	reverse_proxy localhost:8080
+}

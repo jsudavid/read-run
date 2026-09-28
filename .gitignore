@@ -1,0 +1,17 @@
+node_modules/
+dist/
+backup/
+deploy/*.zip
+deploy/releases/
+
+.omx/
+.playwright-mcp/
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+.env
+.env.*
+!.env.example
+!.env.*.example
